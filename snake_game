@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+            background-color: #eee;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const tileSize = 20;
+        let snake = [{ x: 10, y: 10 }];
+        let apple = { x: 15, y: 15 };
+        let dx = 1;
+        let dy = 0;
+        let score = 0;
+
+        function draw() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw snake
+            ctx.fillStyle = 'green';
+            snake.forEach(segment => {
+                ctx.fillRect(segment.x * tileSize, segment.y * tileSize, tileSize, tileSize);
+            });
+
+            // Draw apple
+            ctx.fillStyle = 'red';
+            ctx.fillRect(apple.x * tileSize, apple.y * tileSize, tileSize, tileSize);
+
+            // Draw score
+            ctx.fillStyle = 'black';
+            ctx.fillText('Score: ' + score, 10, 20);
+        }
+
+        function move() {
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+            snake.unshift(head);
+
+            // Check if snake ate the apple
+            if (head.x === apple.x && head.y === apple.y) {
+                score++;
+                spawnApple();
+            } else {
+                snake.pop();
+            }
+
+            // Check if snake collided with itself or the walls
+            if (snake.some(segment => segment.x === head.x && segment.y === head.y) || 
+                head.x < 0 || head.x >= canvas.width / tileSize || head.y < 0 || head.y >= canvas.height / tileSize) {
+                gameOver();
+            }
+        }
+
+        function spawnApple() {
+            apple.x = Math.floor(Math.random() * (canvas.width / tileSize));
+            apple.y = Math.floor(Math.random() * (canvas.height / tileSize));
+        }
+
+        function gameOver() {
+            clearInterval(gameLoop);
+            alert('Game Over! Your score: ' + score);
+            location.reload(); // Reload the page to restart the game
+        }
+
+        document.addEventListener('keydown', event => {
+            switch (event.key) {
+                case 'ArrowLeft':
+                    if (dx !== 1) { // Prevent moving in opposite direction
+                        dx = -1; dy = 0;
+                    }
+                    break;
+                case 'ArrowRight':
+                    if (dx !== -1) {
+                        dx = 1; dy = 0;
+                    }
+                    break;
+                case 'ArrowUp':
+                    if (dy !== 1) {
+                        dx = 0; dy = -1;
+                    }
+                    break;
+                case 'ArrowDown':
+                    if (dy !== -1) {
+                        dx = 0; dy = 1;
+                    }
+                    break;
+            }
+        });
+
+        function gameLoop() {
+            move();
+            draw();
+        }
+
+        spawnApple();
+        setInterval(gameLoop, 100);
+    </script>
+</body>
+</html>
